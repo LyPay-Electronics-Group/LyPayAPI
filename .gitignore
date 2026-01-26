@@ -1,0 +1,14 @@
+/.idea/
+/.venv/
+/.env
+
+/__pycache__/
+/*/__pycache__/
+
+/data/firewall/
+/data/QR/
+/data/cheques/
+/data/images/
+/data/keyboards/
+/data/logos/
+/data/*.db*
