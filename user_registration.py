@@ -1,6 +1,7 @@
 from aiohttp import ClientSession, TCPConnector
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
+from . import j2
 from .__config__ import CONFIGURATION
 from .__exceptions__ import APIError
 
@@ -36,18 +37,20 @@ async def check_email_record(email: str) -> dict[str, ...]:
             return json
 
 
-async def send_email(route: str, participant: str, code: str | int) -> None:
+async def send_email(route: str, participant: str, code: str | int, keys: dict[str, ...] | None = None) -> None:
     """
     Отправляет письмо по эл. почте
 
     :param route: 'main' или 'guest' -- два разных шаблона письма для лицеистов/сотрудников и гостей Ярмарки
     :param participant: почта получателя
     :param code: код верификации пользователя
+    :param keys: словарь ключей для замены в итоговом письме (выставляется по умолчанию)
     :return: ничего (может вызвать ошибку выполнения)
     """
 
+    keys_str = f"&keys={j2.to_(keys, string_mode=True)}" if keys is not None else ''
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/reg/email/send?route={route}&email={participant}&code={code}") as response:
+        async with session.get(f"{host}:{port}/user/reg/email/send?route={route}&email={participant}&code={code}{keys_str}") as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, json)

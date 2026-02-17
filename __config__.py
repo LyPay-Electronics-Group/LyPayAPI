@@ -11,4 +11,4 @@ class CONFIGURATION:
 
 VERSION = "test-1"
 NAME = ""
-BUILD = 3
+BUILD = 4
