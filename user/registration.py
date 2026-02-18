@@ -1,9 +1,9 @@
 from aiohttp import ClientSession, TCPConnector
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
-from . import j2
-from .__config__ import CONFIGURATION
-from .__exceptions__ import APIError
+from .. import j2
+from ..__config__ import CONFIGURATION
+from ..__exceptions__ import APIError
 
 host = CONFIGURATION.HOST
 port = CONFIGURATION.PORT
@@ -29,7 +29,7 @@ async def check_email_record(email: str) -> dict[str, ...]:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/reg/email/corp_record?email={email}") as response:
+        async with session.get(f"{host}:{port}/reg/email/corp_record?email={email}") as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, json)
@@ -50,7 +50,7 @@ async def send_email(route: str, participant: str, code: str | int, keys: dict[s
 
     keys_str = f"&keys={j2.to_(keys, string_mode=True)}" if keys is not None else ''
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/reg/email/send?route={route}&email={participant}&code={code}{keys_str}") as response:
+        async with session.get(f"{host}:{port}/reg/email/send?route={route}&email={participant}&code={code}{keys_str}") as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, json)
@@ -76,7 +76,7 @@ async def new(*, name: str, login: str | None, password: str | None, group: str,
         args += f"&tag={tag}"
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/reg/new?{args}") as response:
+        async with session.get(f"{host}:{port}/reg/user?{args}") as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, json)

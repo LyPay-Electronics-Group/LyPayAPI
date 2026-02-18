@@ -5,11 +5,8 @@ from aiofiles import open as a_open
 from os.path import getmtime, exists
 from os import remove
 
-from .__config__ import CONFIGURATION
-from .__exceptions__ import APIError
-
-from . import user_registration as register
-from . import user_balance as balance
+from ..__config__ import CONFIGURATION
+from ..__exceptions__ import APIError
 
 host = CONFIGURATION.HOST
 port = CONFIGURATION.PORT
