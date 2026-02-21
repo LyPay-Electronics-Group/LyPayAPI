@@ -5,9 +5,9 @@ from os.path import getmtime, exists
 from os import remove
 from aiofiles import open as a_open
 
-from ..__config__ import CONFIGURATION
-from ..__exceptions__ import APIError
-from ..scripts.mem import save_iterative
+from ...__config__ import CONFIGURATION
+from ...__exceptions__ import APIError
+from ...scripts.mem import save_iterative
 
 host = CONFIGURATION.HOST
 port = CONFIGURATION.PORT
@@ -18,7 +18,7 @@ ssl_context.check_hostname = False
 ssl_context.verify_mode = CERT_NONE
 
 
-async def get_avatar(ID: str) -> str | None:
+async def get(ID: str) -> str | None:
     """
     Запрос данных об аватаре магазина
 
@@ -43,7 +43,7 @@ async def get_avatar(ID: str) -> str | None:
                 json = {"message": "unknown", "error": "unknown", "result": "got image content"}
 
             if response.status >= 400:
-                raise APIError.get(get_avatar, response, json)
+                raise APIError.get(get, response, json)
 
             if json['result'] == "no icon":
                 if exists(path):
@@ -55,9 +55,9 @@ async def get_avatar(ID: str) -> str | None:
             return path
 
 
-async def set_avatar(ID: str, media_path: str):
+async def update(ID: str, media_path: str):
     """
-    Запрос данных об аватаре магазина
+    Обновление аватарки магазина
 
     :param ID: ID магазина
     :param media_path: путь (абсолютный) до файла с аватаром
@@ -80,4 +80,21 @@ async def set_avatar(ID: str, media_path: str):
                 data=form
         ) as response:
             if response.status >= 400:
-                raise APIError.get(get_avatar, response, await response.json())
+                raise APIError.get(update, response, await response.json())
+
+
+async def delete(ID: str):
+    """
+    Удаление аватарки магазина
+
+    :param ID: ID магазина
+    :return: ничего (может вызвать ошибку выполнения)
+    """
+
+    async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
+        async with session.get(
+                f"{host}:{port}/store/settings/avatar/remove",
+                params={"ID": ID}
+        ) as response:
+            if response.status >= 400:
+                raise APIError.get(delete, response, await response.json())
