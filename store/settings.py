@@ -32,7 +32,7 @@ async def get_avatar(ID: str) -> str | None:
         unix_str = ""
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/sets/avatar/get?ID={ID}{unix_str}") as response:
+        async with session.get(f"{host}:{port}/settings/avatar/get?ID={ID}{unix_str}") as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(get_avatar, response, json)
@@ -44,5 +44,5 @@ async def get_avatar(ID: str) -> str | None:
             if json['result'] == "avatar didn't change":
                 return path
 
-            await save_iterative(response, path)
+            await save_iterative(response, path, CONFIGURATION.CHUNK_SIZE)
             return path

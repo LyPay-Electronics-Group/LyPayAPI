@@ -72,7 +72,7 @@ async def _request_qr(ID: int, path: str) -> None:
             if response.status >= 400:
                 raise APIError.get(_request_qr, response, await response.json())
 
-            await save_iterative(response, path)
+            await save_iterative(response, path, CONFIGURATION.CHUNK_SIZE)
 
 
 async def qr(ID: int) -> str:
