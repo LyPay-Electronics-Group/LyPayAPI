@@ -1,8 +1,9 @@
-from aiohttp import ClientSession, TCPConnector
+from aiohttp import ClientSession, TCPConnector, FormData
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
 from os.path import getmtime, exists
 from os import remove
+from aiofiles import open as a_open
 
 from ..__config__ import CONFIGURATION
 from ..__exceptions__ import APIError
@@ -32,8 +33,12 @@ async def get_avatar(ID: str) -> str | None:
         unix_str = ""
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/settings/avatar/get?ID={ID}{unix_str}") as response:
-            json = await response.json()
+        async with session.get(f"{host}:{port}/store/settings/avatar/get?ID={ID}{unix_str}") as response:
+            if "json" in response.content_type:
+                json = await response.json()
+            else:
+                json = {"message": "unknown", "error": "unknown", "result": "got image content"}
+
             if response.status >= 400:
                 raise APIError.get(get_avatar, response, json)
 
@@ -41,8 +46,31 @@ async def get_avatar(ID: str) -> str | None:
                 if exists(path):
                     remove(path)
                 return None
-            if json['result'] == "avatar didn't change":
-                return path
 
-            await save_iterative(response, path, CONFIGURATION.CHUNK_SIZE)
+            if json['result'] != "avatar didn't change":
+                await save_iterative(response, path, CONFIGURATION.CHUNK_SIZE)
             return path
+
+
+async def set_avatar(ID: str, media_path: str):
+    """
+    Запрос данных об аватаре магазина
+
+    :param ID: ID магазина
+    :param media_path: путь (абсолютный) до файла с аватаром
+    :return: ничего (может вызвать ошибку выполнения)
+    """
+
+    media_type = media_path.split(".")[-1]
+    form = FormData()
+    async with a_open(media_path, 'rb') as avatar:
+        form.add_field(
+            "avatar",
+            await avatar.read(),
+            content_type=f"image/{media_type}"
+        )
+
+    async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
+        async with session.post(f"{host}:{port}/store/settings/avatar/set?ID={ID}", data=form) as response:
+            if response.status >= 400:
+                raise APIError.get(get_avatar, response, await response.json())

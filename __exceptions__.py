@@ -48,6 +48,8 @@ class APIError(Exception):
             return NotEnoughBalance(method, response, json)
         elif json['message'] == 'subzero input':
             return SubZeroInput(method, response, json)
+        elif json['message'] == 'avatar not found':
+            return MediaNotFound(method, response, json)
 
         return cls(method, response, json)
 
@@ -105,4 +107,11 @@ class SubZeroInput(APIError):
         return f"""\
 Получен код HTTP{self.status_code} при вызове {self.method}. \
 Сообщение ядра: {self.error_code} (в поле для перевода введено число меньше нуля).
+"""
+
+class MediaNotFound(APIError):
+    def __str__(self):
+        return f"""\
+Получен код HTTP{self.status_code} при вызове {self.method}. \
+Сообщение ядра: {self.error_code} (медиа-контент не был найден).
 """
