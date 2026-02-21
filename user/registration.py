@@ -29,7 +29,10 @@ async def check_email_record(email: str) -> dict[str, ...]:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/reg/email/corp_record?email={email}") as response:
+        async with session.get(
+                f"{host}:{port}/reg/email/corp_record",
+                params={"email": email}
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, json)
@@ -48,9 +51,18 @@ async def send_email(route: str, participant: str, code: str | int, keys: dict[s
     :return: ничего (может вызвать ошибку выполнения)
     """
 
-    keys_str = f"&keys={j2.to_(keys, string_mode=True)}" if keys is not None else ''
+    payload = dict()
+    if keys is not None:
+        payload["keys"] = j2.to_(keys, string_mode=True)
+    payload["route"] = route
+    payload["email"] = participant
+    payload["code"] = code
+
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/reg/email/send?route={route}&email={participant}&code={code}{keys_str}") as response:
+        async with session.get(
+                f"{host}:{port}/reg/email/send",
+                params=payload
+        ) as response:
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, await response.json())
 
@@ -68,14 +80,22 @@ async def new(*, name: str, login: str | None, password: str | None, group: str,
     :return: ID новой записи
     """
 
-    args = f"name={name}&group={group}&email={email}&owner_flag={owner_flag}"
-    if login is not None and password is not None:
-        args += f"&login={login}&password={password}"
+    payload = dict()
+    payload["name"] = name
+    payload["group"] = group
+    payload["email"] = email
+    payload["owner_flag"] = owner_flag
     if tag is not None:
-        args += f"&tag={tag}"
+        payload["tag"] = tag
+    if login is not None and password is not None:
+        payload["login"] = login
+        payload["password"] = password
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/reg/user?{args}") as response:
+        async with session.get(
+                f"{host}:{port}/reg/user",
+                params=payload
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(check_email_record, response, json)

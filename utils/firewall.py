@@ -49,7 +49,10 @@ async def entry(ID: int, route: str) -> dict:
 
     route = route.strip().lower()
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/fw/{route}?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/fw/{route}",
+                params={"ID": ID}
+        ) as response:
             json = await response.json()
             if response.status // 100 == 2:
                 if json['found']:

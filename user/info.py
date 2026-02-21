@@ -38,7 +38,10 @@ async def get(ID: int) -> dict[str, ...]:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/get?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/user/get",
+                params={"ID": ID}
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(get, response, json)
@@ -68,7 +71,10 @@ async def _request_qr(ID: int, path: str) -> None:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/qr/get?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/user/qr/get",
+                params={"ID": ID}
+        ) as response:
             if response.status >= 400:
                 raise APIError.get(_request_qr, response, await response.json())
 
@@ -84,10 +90,17 @@ async def qr(ID: int) -> str:
     """
 
     path = cache_path + f"{ID}.png"
+    payload = {
+        "ID": ID,
+        "unix": getmtime(path)
+    }
 
     if exists(path):
         async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-            async with session.get(f"{host}:{port}/user/qr/check?ID={ID}&unix={getmtime(path)}") as response:
+            async with session.get(
+                    f"{host}:{port}/user/qr/check",
+                    params=payload
+            ) as response:
                 json = await response.json()
                 if response.status >= 400:
                     raise APIError.get(qr, response, json)

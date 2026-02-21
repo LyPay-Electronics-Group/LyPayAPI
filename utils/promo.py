@@ -53,7 +53,10 @@ async def get(ID: str) -> dict:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/promo/get?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/promo/get",
+                params={"ID": ID}
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise IDNotFound(get, response, json)
@@ -72,7 +75,14 @@ async def add(ID: str, value: int, author: str) -> None:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/promo/add?ID={ID}&value={value}&author={author}") as response:
+        async with session.get(
+                f"{host}:{port}/promo/add",
+                params={
+                    "ID": ID,
+                    "value": value,
+                    "author": author
+                }
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 if json["message"] == "ID already exists":
@@ -91,18 +101,22 @@ async def edit(ID: str, value: int | None = None, author: str | None = None, act
     :return: ничего (может вызвать ошибку выполнения)
     """
 
-    args = ""
+    payload = dict()
     if value is not None:
-        args += f"&value={value}"
+        payload["value"] = value
     if author is not None:
-        args += f"&author={author}"
+        payload["author"] = author
     if active is not None:
-        args += f"&active={active}"
-    if len(args) == 0:
+        payload["active"] = active
+    if len(payload) == 0:
         raise ValueError("В вызове функции promo.edit должен присутствовать хотя бы один аргумент кроме ID.")
+    payload["ID"] = ID
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/promo/edit?ID={ID}{args}") as response:
+        async with session.get(
+                f"{host}:{port}/promo/edit",
+                params=payload
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError(edit, response, json)

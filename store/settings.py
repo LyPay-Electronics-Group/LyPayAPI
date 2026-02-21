@@ -27,13 +27,16 @@ async def get_avatar(ID: str) -> str | None:
     """
 
     path = CONFIGURATION.CACHEPATH + f"stores_media_{ID}.jpg"
+    payload = dict()
+    payload["ID"] = ID
     if exists(path):
-        unix_str = f"&unix={getmtime(path)}"
-    else:
-        unix_str = ""
+        payload["unix"] = getmtime(path)
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/store/settings/avatar/get?ID={ID}{unix_str}") as response:
+        async with session.get(
+                f"{host}:{port}/store/settings/avatar/get",
+                params=payload
+        ) as response:
             if "json" in response.content_type:
                 json = await response.json()
             else:
@@ -71,6 +74,10 @@ async def set_avatar(ID: str, media_path: str):
         )
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.post(f"{host}:{port}/store/settings/avatar/set?ID={ID}", data=form) as response:
+        async with session.post(
+                f"{host}:{port}/store/settings/avatar/set",
+                params={"ID": ID},
+                data=form
+        ) as response:
             if response.status >= 400:
                 raise APIError.get(get_avatar, response, await response.json())

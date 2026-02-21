@@ -22,7 +22,10 @@ async def view(ID: int) -> int:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/balance?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/user/balance",
+                params={"ID", ID}
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(view, response, json)
@@ -43,9 +46,17 @@ async def deposit(ID: int, value: int, agent_id: int | None = None) -> None:
     :return: ничего (может вызвать ошибку выполнения)
     """
 
-    agent_id_str = f"&agent_id={agent_id}" if agent_id is not None else ''
+    payload = dict()
+    if agent_id is not None:
+        payload['agent_id'] = agent_id
+    payload['ID'] = ID
+    payload['value'] = value
+
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/deposit?ID={ID}&value={value}" + agent_id_str) as response:
+        async with session.get(
+                f"{host}:{port}/user/deposit",
+                params=payload
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(deposit, response, json)
@@ -68,13 +79,20 @@ async def transfer(ID_out: int, ID_in: int | str, amount: int) -> None:
     :return: ничего (может вызвать ошибку выполнения)
     """
 
+    payload = dict()
+    payload['ID_out'] = ID_out
+    payload['ID_in'] = ID_in
+    payload['amount'] = amount
     if type(ID_in) is int:
-        mode = "t"  # transfer
+        payload['mode'] = 't'  # transfer
     else:
-        mode = "b"  # buy
+        payload['mode'] = 'b'  # buy
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/transfer?ID_out={ID_out}&ID_in={ID_in}&amount={amount}&mode={mode}") as response:
+        async with session.get(
+                f"{host}:{port}/user/transfer",
+                params=payload
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(transfer, response, json)
