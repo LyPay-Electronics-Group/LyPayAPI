@@ -6,7 +6,7 @@ from os import remove
 
 from ..__config__ import CONFIGURATION
 from ..__exceptions__ import APIError
-from ..mem import save_iterative
+from ..scripts.mem import save_iterative
 
 host = CONFIGURATION.HOST
 port = CONFIGURATION.PORT

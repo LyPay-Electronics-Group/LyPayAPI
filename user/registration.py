@@ -1,7 +1,7 @@
 from aiohttp import ClientSession, TCPConnector
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
-from .. import j2
+from ..scripts import j2
 from ..__config__ import CONFIGURATION
 from ..__exceptions__ import APIError
 

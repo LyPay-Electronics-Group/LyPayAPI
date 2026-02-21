@@ -1,8 +1,8 @@
 from aiohttp import ClientSession, TCPConnector
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
-from .__config__ import CONFIGURATION
-from .__exceptions__ import APIError, IDNotFound
+from ..__config__ import CONFIGURATION
+from ..__exceptions__ import APIError, IDNotFound
 
 host = CONFIGURATION.HOST
 port = CONFIGURATION.PORT
