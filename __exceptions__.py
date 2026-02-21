@@ -109,6 +109,7 @@ class SubZeroInput(APIError):
 Сообщение ядра: {self.error_code} (в поле для перевода введено число меньше нуля).
 """
 
+
 class MediaNotFound(APIError):
     def __str__(self):
         return f"""\
