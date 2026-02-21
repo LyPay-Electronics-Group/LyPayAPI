@@ -51,9 +51,8 @@ async def send_email(route: str, participant: str, code: str | int, keys: dict[s
     keys_str = f"&keys={j2.to_(keys, string_mode=True)}" if keys is not None else ''
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
         async with session.get(f"{host}:{port}/reg/email/send?route={route}&email={participant}&code={code}{keys_str}") as response:
-            json = await response.json()
             if response.status >= 400:
-                raise APIError.get(check_email_record, response, json)
+                raise APIError.get(check_email_record, response, await response.json())
 
 
 async def new(*, name: str, login: str | None, password: str | None, group: str, email: str, tag: str | None, owner_flag: str) -> int:
