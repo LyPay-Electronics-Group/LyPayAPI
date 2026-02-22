@@ -1,7 +1,7 @@
 from aiohttp import ClientSession, TCPConnector
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
-from ..scripts import j2, censor
+from ..scripts import j2
 from ..__config__ import CONFIGURATION
 from ..__exceptions__ import APIError
 
@@ -79,11 +79,6 @@ async def new(*, name: str, login: str | None, password: str | None, group: str,
     :param owner_flag: 'tg_owner', 'tg_guest', 'web_owner', 'web_guest' или 'integration' (для каждой платформы клиент должен сам контролировать этот аргумент)
     :return: ID новой записи
     """
-
-    if not censor.check_name(name):
-        raise NameError(f"Имя не прошло проверку. Разрешённые символы: {''.join(CONFIGURATION.CORRECT_NAME_LITERALS)}")
-    elif login is not None and not censor.check_login(login):
-        raise NameError(f"Логин не прошёл проверку. Разрешённые символы: {''.join(CONFIGURATION.CORRECT_LOGIN_LITERALS)}")
 
     payload = dict()
     payload["name"] = name
