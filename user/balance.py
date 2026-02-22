@@ -24,7 +24,7 @@ async def view(ID: int) -> int:
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
         async with session.get(
                 f"{host}:{port}/user/balance",
-                params={"ID", ID}
+                params={"ID": ID}
         ) as response:
             json = await response.json()
             if response.status >= 400:
