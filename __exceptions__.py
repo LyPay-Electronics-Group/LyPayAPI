@@ -36,20 +36,35 @@ class APIError(Exception):
 
         elif json['message'] == 'bad parsing':
             return BadRequest(method, response, json)
+
         elif json['message'] == 'invalid route':
             return InvalidRoute(method, response, json)
+
         elif json['message'] == 'email not found':
             return EmailNotFound(method, response, json)
+
         elif json['message'] == 'ID not found':
             return IDNotFound(method, response, json)
         elif json['message'] == 'ID already exists':
             return IDAlreadyExists(method, response, json)
+
         elif json['message'] == 'not enough balance':
             return NotEnoughBalance(method, response, json)
         elif json['message'] == 'subzero input':
             return SubZeroInput(method, response, json)
+
         elif json['message'] == 'avatar not found':
             return MediaNotFound(method, response, json)
+
+        elif json['message'] == 'bad censor flag: user name':
+            return InvalidUserName(method, response, json)
+        elif json['message'] == 'bad censor flag: login':
+            return InvalidUserLogin(method, response, json)
+
+        elif json['message'] == 'bad censor flag: store name':
+            return InvalidStoreName(method, response, json)
+        elif json['message'] == 'bad censor flag: desc':
+            return InvalidStoreDescription(method, response, json)
 
         return cls(method, response, json)
 
@@ -115,4 +130,36 @@ class MediaNotFound(APIError):
         return f"""\
 Получен код HTTP{self.status_code} при вызове {self.method}. \
 Сообщение ядра: {self.error_code} (медиа-контент не был найден).
+"""
+
+
+class InvalidUserName(APIError):
+    def __str__(self):
+        return f"""\
+Получен код HTTP{self.status_code} при вызове {self.method}. \
+Сообщение ядра: {self.error_code} (имя пользователя не прошло проверку).
+"""
+
+
+class InvalidUserLogin(APIError):
+    def __str__(self):
+        return f"""\
+Получен код HTTP{self.status_code} при вызове {self.method}. \
+Сообщение ядра: {self.error_code} (логин пользователя не прошёл проверку).
+"""
+
+
+class InvalidStoreName(APIError):
+    def __str__(self):
+        return f"""\
+Получен код HTTP{self.status_code} при вызове {self.method}. \
+Сообщение ядра: {self.error_code} (название магазина не прошло проверку).
+"""
+
+
+class InvalidStoreDescription(APIError):
+    def __str__(self):
+        return f"""\
+Получен код HTTP{self.status_code} при вызове {self.method}. \
+Сообщение ядра: {self.error_code} (описание магазина не прошло проверку).
 """

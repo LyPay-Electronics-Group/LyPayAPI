@@ -9,9 +9,6 @@ class CONFIGURATION:
     HOST = "http://localhost"
     PORT = 8128
 
-    CORRECT_NAME_LITERALS = set("абвгдеёжзийклмнопрстуфхцчшщъыьэюя -–АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
-    CORRECT_LOGIN_LITERALS = set("0123456789abcdefghijklmnopqrstuvwxyz._-ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
 VERSION = "test-1"
 NAME = ""
 BUILD = 6
