@@ -1,12 +1,12 @@
 from aiohttp import ClientSession, TCPConnector
 from ssl import create_default_context as ssl_create_default_context, CERT_NONE
 
-from aiofiles import open as a_open
 from os.path import getmtime, exists
 from os import remove
 
 from ..__config__ import CONFIGURATION
 from ..__exceptions__ import APIError
+from ..scripts.mem import save_iterative
 
 host = CONFIGURATION.HOST
 port = CONFIGURATION.PORT
@@ -38,7 +38,10 @@ async def get(ID: int) -> dict[str, ...]:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/get?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/user/get",
+                params={"ID": ID}
+        ) as response:
             json = await response.json()
             if response.status >= 400:
                 raise APIError.get(get, response, json)
@@ -68,13 +71,14 @@ async def _request_qr(ID: int, path: str) -> None:
     """
 
     async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{host}:{port}/user/qr/get?ID={ID}") as response:
+        async with session.get(
+                f"{host}:{port}/user/qr/get",
+                params={"ID": ID}
+        ) as response:
             if response.status >= 400:
                 raise APIError.get(_request_qr, response, await response.json())
 
-            async with a_open(path, mode='wb') as f:
-                async for chunk in response.content.iter_chunked(CONFIGURATION.CHUNK_SIZE):
-                    await f.write(chunk)
+            await save_iterative(response, path, CONFIGURATION.CHUNK_SIZE)
 
 
 async def qr(ID: int) -> str:
@@ -86,10 +90,17 @@ async def qr(ID: int) -> str:
     """
 
     path = cache_path + f"{ID}.png"
+    payload = {
+        "ID": ID,
+        "unix": getmtime(path)
+    }
 
     if exists(path):
         async with ClientSession(connector=TCPConnector(ssl=ssl_context)) as session:
-            async with session.get(f"{host}:{port}/user/qr/check?ID={ID}&unix={getmtime(path)}") as response:
+            async with session.get(
+                    f"{host}:{port}/user/qr/check",
+                    params=payload
+            ) as response:
                 json = await response.json()
                 if response.status >= 400:
                     raise APIError.get(qr, response, json)

@@ -4,8 +4,8 @@ from os.path import exists
 from .__config__ import CONFIGURATION, VERSION, NAME, BUILD
 
 from . import user
-from . import firewall
-from . import promo
+from . import store
+from . import utils
 
 
 if not exists(CONFIGURATION.CACHEPATH):
